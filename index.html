@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>OrbitOS - AI Chat</title>
+    <style>
+        body { background: #1a1a1a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .box { max-width: 600px; margin: 0 auto; }
+        select, input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: none; }
+        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
+        button:hover { background: #00cc6a; }
+        #chat-history { background: #2d2d2d; height: 300px; overflow-y: scroll; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .msg { margin: 5px 0; padding: 8px; border-radius: 5px; }
+        .user { background: #444; text-align: right; }
+        .bot { background: #0055ff; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>🪐 OrbitOS AI</h1>
+    
+    <select id="modelSelector">
+        <option value="☁️ Groq: Llama 3.1 70B (Inteligente & Rápido)">☁️ Llama 3.1 70B (Rápido)</option>
+        <option value="☁️ Groq: Llama 3.1 8B (Flash - Muito Rápido)">⚡ Llama 3.1 8B (Flash)</option>
+        <option value="☁️ Groq: Mixtral 8x7B (MoE)">🧠 Mixtral 8x7B</option>
+        <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Gasta Cota!)">🔥 Qwen Coder (H200)</option>
+    </select>
+
+    <div id="chat-history"></div>
+
+    <input type="text" id="userInput" placeholder="Digite sua mensagem..." />
+    <button onclick="sendMessage()" id="sendBtn">Enviar</button>
+    <p id="status" style="font-size: 0.8em; color: #888;"></p>
+</div>
+
+<script type="module">
+    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/+esm";
+
+    let client;
+    const statusText = document.getElementById('status');
+    const historyDiv = document.getElementById('chat-history');
+
+    // 1. Conecta na API assim que a página abre
+    async function connectAPI() {
+        statusText.innerText = "🛰️ Conectando ao APIDOST...";
+        try {
+            // Conecta no seu Space
+            client = await Client.connect("Madras1/APIDOST");
+            statusText.innerText = "✅ Conectado ao Sistema Neural.";
+        } catch (error) {
+            statusText.innerText = "❌ Erro ao conectar: " + error.message;
+            console.error(error);
+        }
+    }
+
+    // Chama a conexão inicial
+    connectAPI();
+
+    // 2. Função de Enviar
+    window.sendMessage = async function() {
+        const input = document.getElementById('userInput');
+        const modelSelect = document.getElementById('modelSelector');
+        const userText = input.value;
+        
+        if (!userText || !client) return;
+
+        // Adiciona mensagem do usuário na tela
+        appendMessage("user", userText);
+        input.value = "";
+        statusText.innerText = "🤔 Processando...";
+
+        try {
+            // A Mágica acontece aqui: chama a função 'predict'
+            const result = await client.predict("/chat", { 
+                message: userText,
+                model_selector: modelSelect.value // Manda o modelo escolhido
+            });
+
+            // O resultado vem dentro de 'data'
+            const botResponse = result.data[0];
+            appendMessage("bot", botResponse);
+            statusText.innerText = "✅ Pronto.";
+
+        } catch (error) {
+            statusText.innerText = "❌ Erro na resposta.";
+            appendMessage("bot", "Erro: " + error.message);
+        }
+    }
+
+    function appendMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = "msg " + role;
+        div.innerText = text;
+        historyDiv.appendChild(div);
+        historyDiv.scrollTop = historyDiv.scrollHeight; // Rola pra baixo
+    }
+</script>
+
+</body>
+</html>
