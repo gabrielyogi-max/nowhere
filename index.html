@@ -6,6 +6,14 @@
     <title>PIP-BOY 3000 // CHAT INTERFACE</title>
     <!-- Fallout-style font -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Marked for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <style>
         :root {
             /* Fallout 4 Amber/Green Color Scheme - focusing on Green */
@@ -194,6 +202,23 @@
             margin-bottom: 5px;
             font-size: 0.8rem;
             opacity: 0.8;
+        }
+
+        /* Code Block Styling */
+        .message pre {
+            background: #111;
+            border: 1px solid var(--pip-green-dim);
+            padding: 10px;
+            overflow-x: auto;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            text-transform: none; /* Keep code case-sensitive */
+        }
+        
+        .message code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            text-transform: none; /* Keep code case-sensitive */
         }
 
         /* Input Area */
@@ -386,6 +411,17 @@
 <script type="module">
     import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/+esm";
 
+    // Initialize Marked with Highlight.js
+    if (window.marked && window.hljs) {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
+    }
+
     // --- CONFIGURAÇÃO DOS SPACES ---
     const CLUSTERS = {
         "Cluster1": "Madras1/APIDOST",
@@ -456,7 +492,7 @@
         }
 
         input.value = "";
-        appendMessage("user", `<strong>USER</strong> ${userText}`);
+        appendMessage("user", `<strong>USER</strong> ${userText}`, false); // Don't parse user input as markdown
         setLoading(true);
 
         try {
@@ -466,7 +502,7 @@
             });
 
             const botResponse = result.data[0];
-            appendMessage("bot", `<strong>SYSTEM</strong> ${botResponse}`);
+            appendMessage("bot", botResponse, true); // Parse bot response as markdown
 
         } catch (error) {
             console.error(error);
@@ -479,16 +515,42 @@
             } else {
                 msg = "ERRO NO PROCESSAMENTO: " + error.message;
             }
-            appendMessage("bot", `<strong>ERRO</strong> ${msg}`);
+            appendMessage("bot", `<strong>ERRO</strong> ${msg}`, false);
         } finally {
             setLoading(false);
         }
     }
 
-    function appendMessage(role, text) {
+    function appendMessage(role, text, isMarkdown = false) {
         const div = document.createElement('div');
         div.className = "message " + role;
-        div.innerHTML = text; 
+        
+        if (role === 'bot' && isMarkdown && window.marked) {
+            // Helper to add the header before parsing markdown
+            // But 'text' is just the raw response.
+            // The <strong>SYSTEM</strong> part is added in the sendMessage for clarity,
+            // but here let's stick to the content.
+            // Wait, in previous code: appendMessage("bot", `<strong>SYSTEM</strong> ${botResponse}`);
+            // If I parse Markdown, I need to be careful not to break the HTML header.
+            
+            // Let's restructure: text passed here is the RAW content.
+            // The "SYSTEM" prefix should be handled separately or pre-pended safely.
+            
+            // However, the current usage is: appendMessage("bot", `<strong>SYSTEM</strong> ${botResponse}`);
+            // This mixes HTML and Markdown.
+            
+            // FIX: Let's assume the text passed to this function is HTML-safe if isMarkdown=false.
+            // If isMarkdown=true, we assume 'text' is the raw markdown content, and we prepend the header manually.
+            
+            // Re-reading usage: 
+            // appendMessage("bot", botResponse, true);
+            
+            const header = role === 'bot' ? '<strong>SYSTEM</strong> ' : '<strong>USER</strong> ';
+            div.innerHTML = header + marked.parse(text);
+        } else {
+            div.innerHTML = text;
+        }
+        
         historyDiv.appendChild(div);
         historyDiv.scrollTop = historyDiv.scrollHeight;
     }
