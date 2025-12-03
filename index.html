@@ -3,237 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbitOS - Neural Interface</title>
+    <title>OrbitOS - Neural Nexus</title>
     <style>
-        /* --- ESTILO ORBITOS (Dark/Neon) --- */
+        /* --- ESTILO ORBITOS: DARK/CYBERPUNK --- */
+        :root {
+            --primary: #00ff41; /* Verde Matrix */
+            --bg: #050505;
+            --panel: #111;
+            --border: #333;
+            --text: #eee;
+            --user-bg: #004400;
+            --bot-bg: #222;
+        }
+
         body {
-            background-color: #0d0d0d;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Consolas', 'Courier New', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
+            overflow: hidden; /* Evita scroll na página toda */
         }
 
-        .container {
-            width: 90%;
-            max-width: 800px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 10px;
+        .terminal-container {
+            width: 95%;
+            max-width: 900px;
+            height: 90vh;
+            background: var(--panel);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Efeito de scanline (opcional, pra ficar hacker) */
+        .terminal-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px #00ff41;
+            margin: 0 0 15px 0;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
         }
 
         .status-bar {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 0.8rem;
             color: #888;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+        }
+
+        .status-indicator {
+            color: #ff3333; /* Começa vermelho (offline) */
+            font-weight: bold;
         }
 
         /* --- CONTROLES --- */
+        .controls {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            z-index: 3; /* Fica acima do scanline */
+        }
+
         select, input, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
             background: #000;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 5px;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 12px;
+            border-radius: 4px;
             font-family: inherit;
-            box-sizing: border-box; /* Garante que padding não estoure a largura */
+            font-size: 0.9rem;
         }
 
         select:focus, input:focus {
             outline: none;
-            border-color: #00ff41;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px var(--primary);
         }
 
-        button {
-            background: #00ff41;
+        /* --- CHAT AREA --- */
+        #chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: #0a0a0a;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 3;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 6px;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: var(--user-bg);
+            color: #fff;
+            border-right: 3px solid var(--primary);
+        }
+
+        .bot {
+            align-self: flex-start;
+            background: var(--bot-bg);
+            color: #ddd;
+            border-left: 3px solid #0088ff;
+        }
+
+        .bot strong { color: #0088ff; }
+        .user strong { color: var(--primary); }
+
+        /* Input Area */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            z-index: 3;
+        }
+
+        button#sendBtn {
+            background: var(--primary);
             color: #000;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
+            border: none;
+            transition: 0.2s;
         }
 
-        button:hover {
+        button#sendBtn:hover {
             background: #00cc33;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 10px var(--primary);
         }
 
         button:disabled {
             background: #333;
             color: #555;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
-        /* --- ÁREA DO CHAT --- */
-        #chat-history {
-            height: 400px;
-            overflow-y: auto;
-            background: #111;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        /* Scrollbar hacker style */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 8px;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .user {
-            align-self: flex-end;
-            background: #004400;
-            color: #ccffcc;
-            border: 1px solid #00ff41;
-        }
-
-        .bot {
-            align-self: flex-start;
-            background: #222;
-            color: #ddd;
-            border: 1px solid #555;
-        }
-
-        .error {
-            color: #ff3333;
-            font-size: 0.9em;
-            text-align: center;
-            margin-top: 5px;
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🪐 OrbitOS AI</h1>
-    <div class="status-bar" id="status">🔴 Desconectado</div>
-
-    <label for="modelSelector">Escolha o Modelo:</label>
-    <select id="modelSelector">
-        <option value="☁️ Groq: Llama 3.3 70B (Novo & Versátil)">☁️ Groq: Llama 3.3 70B (Novo!)</option>
-        <option value="☁️ Groq: Llama 3.1 8B (Flash - Instantâneo)">⚡ Groq: Llama 3.1 8B (Flash)</option>
-        <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Gasta Cota!)">🔥 H200: Qwen Coder (OFF até amanhã)</option>
-    </select>
-
-    <div id="chat-history">
-        <div class="message bot">Olá, Gabriel. OrbitOS online. Escolha um modelo Groq para começar sem gastar cota.</div>
+<div class="terminal-container">
+    <h1>🪐 OrbitOS V4 // SYSTEM READY</h1>
+    
+    <div class="status-bar">
+        <span>USER: GABRIEL</span>
+        <span id="connectionStatus" class="status-indicator">🔴 OFFLINE</span>
     </div>
 
-    <input type="text" id="userInput" placeholder="Digite seu comando..." onkeypress="handleEnter(event)" />
-    <button onclick="sendMessage()" id="sendBtn" disabled>Inicializando...</button>
+    <div class="controls">
+        <select id="modelSelector">
+            <optgroup label="GOOGLE (Multimodal)">
+                <option value="✨ Google: Gemini 1.5 Flash (Rápido)">⚡ Gemini Flash (Mais Rápido)</option>
+                <option value="✨ Google: Gemini 1.5 Pro (Raciocínio Avançado)">🧠 Gemini Pro (Melhor Raciocínio)</option>
+            </optgroup>
+            
+            <optgroup label="GROQ (Speed)">
+                <option value="☁️ Groq: Llama 3.3 70B (Versátil)">🦙 Llama 3.3 70B (Novo)</option>
+                <option value="☁️ Groq: Llama 3.1 8B (Instantâneo)">⚡ Llama 3.1 8B (Flash)</option>
+            </optgroup>
+            
+            <optgroup label="MISTRAL (Europe SOTA)">
+                <option value="🇫🇷 Mistral: Large 3 (SOTA Europeu)">🏰 Mistral Large 3</option>
+                <option value="🇫🇷 Mistral: Codestral (Código)">👨‍💻 Mistral Codestral</option>
+            </optgroup>
+
+            <optgroup label="LOCAL (Hugging Face)">
+                <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Cota ZeroGPU)">🔥 H200: Qwen Coder (OFF se sem cota)</option>
+            </optgroup>
+        </select>
+        <button onclick="clearChat()">Limpar</button>
+    </div>
+
+    <div id="chat-history">
+        <div class="message bot">
+            <strong>SYSTEM:</strong> Conectando ao mainframe neural... Aguarde.
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Insira comando ou mensagem..." onkeypress="handleEnter(event)" autofocus />
+        <button id="sendBtn" onclick="sendMessage()">ENVIAR</button>
+    </div>
 </div>
 
 <script type="module">
     import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/+esm";
 
     let client;
-    const statusText = document.getElementById('status');
+    const statusEl = document.getElementById('connectionStatus');
     const sendBtn = document.getElementById('sendBtn');
     const historyDiv = document.getElementById('chat-history');
+    
+    // Nome do seu Space no Hugging Face (Verifique se está certo!)
+    const SPACE_ID = "Madras1/APIDOST"; 
 
-    // 1. Conecta no seu Space Hugging Face
-    async function connectAPI() {
-        statusText.innerText = "🛰️ Buscando sinal do APIDOST...";
+    // 1. Inicialização e Conexão
+    async function initSystem() {
+        statusEl.innerText = "🛰️ BUSCANDO SINAL...";
+        appendMessage("bot", "<strong>SYSTEM:</strong> Tentando handshake com " + SPACE_ID + "...");
+        
         try {
-            // Conecta no seu Space
-            client = await Client.connect("Madras1/APIDOST");
-            statusText.innerText = "🟢 Sistema Online - Conectado";
-            statusText.style.color = "#00ff41";
-            sendBtn.disabled = false;
-            sendBtn.innerText = "Enviar";
+            client = await Client.connect(SPACE_ID);
+            statusEl.innerText = "🟢 ONLINE - CONECTADO";
+            statusEl.style.color = "#00ff41";
+            appendMessage("bot", "<strong>SYSTEM:</strong> Conexão estabelecida. Todos os modelos disponíveis (Google, Groq, Mistral).");
         } catch (error) {
-            statusText.innerText = "❌ Falha na conexão: " + error.message;
-            statusText.style.color = "red";
+            statusEl.innerText = "❌ ERRO DE CONEXÃO";
+            appendMessage("bot", "<strong>ERRO:</strong> Não foi possível conectar ao Space. Verifique se ele está 'Running' no Hugging Face. Detalhes: " + error.message);
             console.error(error);
         }
     }
 
-    // Chama a conexão ao carregar
-    connectAPI();
+    // Chama ao carregar a página
+    initSystem();
 
-    // 2. Função de Enviar
+    // 2. Enviar Mensagem
     window.sendMessage = async function() {
         const input = document.getElementById('userInput');
         const modelSelect = document.getElementById('modelSelector');
         const userText = input.value;
-        
-        if (!userText.trim() || !client) return;
 
-        // Limpa input e mostra user msg
+        if (!userText.trim()) return;
+        if (!client) {
+            alert("Sistema offline. Tentando reconectar...");
+            await initSystem();
+            if(!client) return;
+        }
+
+        // UI Updates
         input.value = "";
         appendMessage("user", userText);
-        
-        // Bloqueia botão enquanto pensa
-        sendBtn.disabled = true;
-        sendBtn.innerText = "Processando...";
-        statusText.innerText = "🤔 Pensando na Nuvem...";
+        setLoading(true);
 
         try {
-            // Chama a API (Endpoint /chat é padrão do ChatInterface)
+            // Chama a API do Gradio
+            // O endpoint "/chat" é criado automaticamente pelo gr.ChatInterface
             const result = await client.predict("/chat", { 
-                message: userText,
-                model_selector: modelSelect.value // Envia o modelo escolhido
+                message: userText, 
+                model_selector: modelSelect.value 
             });
 
-            // O resultado vem dentro de data[0]
             const botResponse = result.data[0];
             appendMessage("bot", botResponse);
-            
-            statusText.innerText = "🟢 Sistema Online - Pronto";
 
         } catch (error) {
             console.error(error);
-            let errorMsg = "Erro na resposta.";
+            let msg = "Erro desconhecido.";
             
-            // Detecta erro de cota
             if(error.message.includes("GPU quota")) {
-                errorMsg = "⚠️ Cota da GPU H200 excedida! Mude para um modelo GROQ.";
+                msg = "⚠️ COTA H200 EXCEDIDA. Mude para Gemini, Groq ou Mistral.";
             } else if (error.message.includes("aborted")) {
-                errorMsg = "⚠️ Tarefa abortada (Provável erro de cota na H200). Use o Groq.";
+                msg = "⚠️ TAREFA ABORTADA. A GPU H200 está indisponível. Use um modelo de nuvem.";
             } else {
-                errorMsg = "Erro: " + error.message;
+                msg = "Erro no processamento: " + error.message;
             }
-            
-            appendMessage("bot error", errorMsg);
-            statusText.innerText = "⚠️ Erro na execução";
+            appendMessage("bot", "<strong>ERRO:</strong> " + msg);
         } finally {
-            sendBtn.disabled = false;
-            sendBtn.innerText = "Enviar";
+            setLoading(false);
         }
     }
 
-    // Adiciona mensagem na tela
+    // 3. Utilitários
     function appendMessage(role, text) {
         const div = document.createElement('div');
         div.className = "message " + role;
-        div.innerText = text;
+        div.innerHTML = text; // Permite HTML (negrito, etc)
         historyDiv.appendChild(div);
-        historyDiv.scrollTop = historyDiv.scrollHeight; // Rola pra baixo
+        historyDiv.scrollTop = historyDiv.scrollHeight;
     }
 
-    // Permite enviar com Enter
+    function setLoading(isLoading) {
+        if (isLoading) {
+            sendBtn.disabled = true;
+            sendBtn.innerText = "PROCESSANDO...";
+            statusEl.innerText = "🤔 PENSANDO...";
+            statusEl.style.color = "yellow";
+        } else {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "ENVIAR";
+            statusEl.innerText = "🟢 ONLINE";
+            statusEl.style.color = "#00ff41";
+            document.getElementById('userInput').focus();
+        }
+    }
+
+    window.clearChat = function() {
+        historyDiv.innerHTML = '<div class="message bot"><strong>SYSTEM:</strong> Memória limpa.</div>';
+    }
+
     window.handleEnter = function(e) {
         if (e.key === 'Enter') window.sendMessage();
     }
