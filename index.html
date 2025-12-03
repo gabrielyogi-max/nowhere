@@ -2,36 +2,147 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>OrbitOS - AI Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrbitOS - Neural Interface</title>
     <style>
-        body { background: #1a1a1a; color: #fff; font-family: sans-serif; padding: 20px; }
-        .box { max-width: 600px; margin: 0 auto; }
-        select, input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: none; }
-        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
-        button:hover { background: #00cc6a; }
-        #chat-history { background: #2d2d2d; height: 300px; overflow-y: scroll; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        .msg { margin: 5px 0; padding: 8px; border-radius: 5px; }
-        .user { background: #444; text-align: right; }
-        .bot { background: #0055ff; }
+        /* --- ESTILO ORBITOS (Dark/Neon) --- */
+        body {
+            background-color: #0d0d0d;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .status-bar {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        /* --- CONTROLES --- */
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 5px;
+            font-family: inherit;
+            box-sizing: border-box; /* Garante que padding não estoure a largura */
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #00ff41;
+        }
+
+        button {
+            background: #00ff41;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: #00cc33;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+
+        button:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* --- ÁREA DO CHAT --- */
+        #chat-history {
+            height: 400px;
+            overflow-y: auto;
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: #004400;
+            color: #ccffcc;
+            border: 1px solid #00ff41;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background: #222;
+            color: #ddd;
+            border: 1px solid #555;
+        }
+
+        .error {
+            color: #ff3333;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
 
-<div class="box">
+<div class="container">
     <h1>🪐 OrbitOS AI</h1>
-    
+    <div class="status-bar" id="status">🔴 Desconectado</div>
+
+    <label for="modelSelector">Escolha o Modelo:</label>
     <select id="modelSelector">
-        <option value="☁️ Groq: Llama 3.1 70B (Inteligente & Rápido)">☁️ Llama 3.1 70B (Rápido)</option>
-        <option value="☁️ Groq: Llama 3.1 8B (Flash - Muito Rápido)">⚡ Llama 3.1 8B (Flash)</option>
-        <option value="☁️ Groq: Mixtral 8x7B (MoE)">🧠 Mixtral 8x7B</option>
-        <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Gasta Cota!)">🔥 Qwen Coder (H200)</option>
+        <option value="☁️ Groq: Llama 3.3 70B (Novo & Versátil)">☁️ Groq: Llama 3.3 70B (Novo!)</option>
+        <option value="☁️ Groq: Llama 3.1 8B (Flash - Instantâneo)">⚡ Groq: Llama 3.1 8B (Flash)</option>
+        <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Gasta Cota!)">🔥 H200: Qwen Coder (OFF até amanhã)</option>
     </select>
 
-    <div id="chat-history"></div>
+    <div id="chat-history">
+        <div class="message bot">Olá, Gabriel. OrbitOS online. Escolha um modelo Groq para começar sem gastar cota.</div>
+    </div>
 
-    <input type="text" id="userInput" placeholder="Digite sua mensagem..." />
-    <button onclick="sendMessage()" id="sendBtn">Enviar</button>
-    <p id="status" style="font-size: 0.8em; color: #888;"></p>
+    <input type="text" id="userInput" placeholder="Digite seu comando..." onkeypress="handleEnter(event)" />
+    <button onclick="sendMessage()" id="sendBtn" disabled>Inicializando...</button>
 </div>
 
 <script type="module">
@@ -39,22 +150,27 @@
 
     let client;
     const statusText = document.getElementById('status');
+    const sendBtn = document.getElementById('sendBtn');
     const historyDiv = document.getElementById('chat-history');
 
-    // 1. Conecta na API assim que a página abre
+    // 1. Conecta no seu Space Hugging Face
     async function connectAPI() {
-        statusText.innerText = "🛰️ Conectando ao APIDOST...";
+        statusText.innerText = "🛰️ Buscando sinal do APIDOST...";
         try {
             // Conecta no seu Space
             client = await Client.connect("Madras1/APIDOST");
-            statusText.innerText = "✅ Conectado ao Sistema Neural.";
+            statusText.innerText = "🟢 Sistema Online - Conectado";
+            statusText.style.color = "#00ff41";
+            sendBtn.disabled = false;
+            sendBtn.innerText = "Enviar";
         } catch (error) {
-            statusText.innerText = "❌ Erro ao conectar: " + error.message;
+            statusText.innerText = "❌ Falha na conexão: " + error.message;
+            statusText.style.color = "red";
             console.error(error);
         }
     }
 
-    // Chama a conexão inicial
+    // Chama a conexão ao carregar
     connectAPI();
 
     // 2. Função de Enviar
@@ -63,37 +179,63 @@
         const modelSelect = document.getElementById('modelSelector');
         const userText = input.value;
         
-        if (!userText || !client) return;
+        if (!userText.trim() || !client) return;
 
-        // Adiciona mensagem do usuário na tela
-        appendMessage("user", userText);
+        // Limpa input e mostra user msg
         input.value = "";
-        statusText.innerText = "🤔 Processando...";
+        appendMessage("user", userText);
+        
+        // Bloqueia botão enquanto pensa
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Processando...";
+        statusText.innerText = "🤔 Pensando na Nuvem...";
 
         try {
-            // A Mágica acontece aqui: chama a função 'predict'
+            // Chama a API (Endpoint /chat é padrão do ChatInterface)
             const result = await client.predict("/chat", { 
                 message: userText,
-                model_selector: modelSelect.value // Manda o modelo escolhido
+                model_selector: modelSelect.value // Envia o modelo escolhido
             });
 
-            // O resultado vem dentro de 'data'
+            // O resultado vem dentro de data[0]
             const botResponse = result.data[0];
             appendMessage("bot", botResponse);
-            statusText.innerText = "✅ Pronto.";
+            
+            statusText.innerText = "🟢 Sistema Online - Pronto";
 
         } catch (error) {
-            statusText.innerText = "❌ Erro na resposta.";
-            appendMessage("bot", "Erro: " + error.message);
+            console.error(error);
+            let errorMsg = "Erro na resposta.";
+            
+            // Detecta erro de cota
+            if(error.message.includes("GPU quota")) {
+                errorMsg = "⚠️ Cota da GPU H200 excedida! Mude para um modelo GROQ.";
+            } else if (error.message.includes("aborted")) {
+                errorMsg = "⚠️ Tarefa abortada (Provável erro de cota na H200). Use o Groq.";
+            } else {
+                errorMsg = "Erro: " + error.message;
+            }
+            
+            appendMessage("bot error", errorMsg);
+            statusText.innerText = "⚠️ Erro na execução";
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "Enviar";
         }
     }
 
+    // Adiciona mensagem na tela
     function appendMessage(role, text) {
         const div = document.createElement('div');
-        div.className = "msg " + role;
+        div.className = "message " + role;
         div.innerText = text;
         historyDiv.appendChild(div);
         historyDiv.scrollTop = historyDiv.scrollHeight; // Rola pra baixo
+    }
+
+    // Permite enviar com Enter
+    window.handleEnter = function(e) {
+        if (e.key === 'Enter') window.sendMessage();
     }
 </script>
 
