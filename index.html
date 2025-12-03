@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbitOS - Neural Nexus</title>
+    <title>OrbitOS V5 - Multi-Cluster</title>
     <style>
         /* --- ESTILO ORBITOS: DARK/CYBERPUNK --- */
         :root {
             --primary: #00ff41; /* Verde Matrix */
+            --secondary: #0088ff; /* Azul Cyber */
             --bg: #050505;
             --panel: #111;
             --border: #333;
@@ -25,7 +26,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Evita scroll na página toda */
+            overflow: hidden;
         }
 
         .terminal-container {
@@ -42,7 +43,7 @@
             position: relative;
         }
 
-        /* Efeito de scanline (opcional, pra ficar hacker) */
+        /* Efeito Scanline */
         .terminal-container::before {
             content: " ";
             display: block;
@@ -74,8 +75,8 @@
         }
 
         .status-indicator {
-            color: #ff3333; /* Começa vermelho (offline) */
             font-weight: bold;
+            margin-left: 10px;
         }
 
         /* --- CONTROLES --- */
@@ -84,7 +85,7 @@
             grid-template-columns: 3fr 1fr;
             gap: 10px;
             margin-bottom: 15px;
-            z-index: 3; /* Fica acima do scanline */
+            z-index: 3;
         }
 
         select, input, button {
@@ -138,10 +139,10 @@
             align-self: flex-start;
             background: var(--bot-bg);
             color: #ddd;
-            border-left: 3px solid #0088ff;
+            border-left: 3px solid var(--secondary);
         }
 
-        .bot strong { color: #0088ff; }
+        .bot strong { color: var(--secondary); }
         .user strong { color: var(--primary); }
 
         /* Input Area */
@@ -172,7 +173,7 @@
             box-shadow: none;
         }
 
-        /* Scrollbar hacker style */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -183,32 +184,38 @@
 <body>
 
 <div class="terminal-container">
-    <h1>🪐 OrbitOS V4 // SYSTEM READY</h1>
+    <h1>🪐 OrbitOS V5 // MULTI-CLUSTER</h1>
     
     <div class="status-bar">
         <span>USER: GABRIEL</span>
-        <span id="connectionStatus" class="status-indicator">🔴 OFFLINE</span>
+        <div>
+            <span>CLUSTER 1 (MAIN):</span> <span id="status-main" class="status-indicator" style="color:red">OFF</span> |
+            <span>CLUSTER 2 (MATH):</span> <span id="status-math" class="status-indicator" style="color:red">OFF</span>
+        </div>
     </div>
 
     <div class="controls">
         <select id="modelSelector">
-            <optgroup label="GOOGLE (Multimodal)">
-                <option value="✨ Google: Gemini 1.5 Flash (Rápido)">⚡ Gemini Flash (Mais Rápido)</option>
-                <option value="✨ Google: Gemini 1.5 Pro (Raciocínio Avançado)">🧠 Gemini Pro (Melhor Raciocínio)</option>
+            <optgroup label="GOOGLE (Cluster 1)">
+                <option value="Cluster1|✨ Google: Gemini 1.5 Flash (Rápido)">⚡ Gemini Flash (Rápido)</option>
+                <option value="Cluster1|✨ Google: Gemini 1.5 Pro (Raciocínio Avançado)">🧠 Gemini Pro (Inteligente)</option>
             </optgroup>
             
-            <optgroup label="GROQ (Speed)">
-                <option value="☁️ Groq: Llama 3.3 70B (Versátil)">🦙 Llama 3.3 70B (Novo)</option>
-                <option value="☁️ Groq: Llama 3.1 8B (Instantâneo)">⚡ Llama 3.1 8B (Flash)</option>
-            </optgroup>
-            
-            <optgroup label="MISTRAL (Europe SOTA)">
-                <option value="🇫🇷 Mistral: Large 3 (SOTA Europeu)">🏰 Mistral Large 3</option>
-                <option value="🇫🇷 Mistral: Codestral (Código)">👨‍💻 Mistral Codestral</option>
+            <optgroup label="GROQ / MISTRAL (Cluster 1)">
+                <option value="Cluster1|☁️ Groq: Llama 3.3 70B (Versátil)">☁️ Llama 3.3 70B</option>
+                <option value="Cluster1|☁️ Groq: Llama 3.1 8B (Instantâneo)">⚡ Llama 3.1 8B Flash</option>
+                <option value="Cluster1|🇫🇷 Mistral: Large 3 (SOTA Europeu)">🏰 Mistral Large 3</option>
+                <option value="Cluster1|🇫🇷 Mistral: Codestral (Código)">👨‍💻 Mistral Codestral</option>
             </optgroup>
 
-            <optgroup label="LOCAL (Hugging Face)">
-                <option value="🔥 Local H200: Qwen 2.5 Coder 32B (Cota ZeroGPU)">🔥 H200: Qwen Coder (OFF se sem cota)</option>
+            <optgroup label="MÓDULO MATEMÁTICO (Cluster 2 - H200)">
+                <option value="Cluster2|🐳 DeepSeek Math 7B (Especialista em Exatas)">🐳 DeepSeek Math (Exatas)</option>
+                <option value="Cluster2|🦙 Llama 3 8B (Raciocínio Geral)">🦙 Llama 3 8B (Lógica)</option>
+                <option value="Cluster2|💎 Gemma 2 9B (Google - Raciocínio Lógico)">💎 Gemma 2 9B (Google)</option>
+            </optgroup>
+
+            <optgroup label="LOCAL H200 (Cluster 1)">
+                <option value="Cluster1|🔥 Local H200: Qwen 2.5 Coder 32B (Cota ZeroGPU)">🔥 Qwen Coder (OFF se sem cota)</option>
             </optgroup>
         </select>
         <button onclick="clearChat()">Limpar</button>
@@ -216,7 +223,7 @@
 
     <div id="chat-history">
         <div class="message bot">
-            <strong>SYSTEM:</strong> Conectando ao mainframe neural... Aguarde.
+            <strong>SYSTEM:</strong> Iniciando protocolos de conexão multi-space...
         </div>
     </div>
 
@@ -229,32 +236,48 @@
 <script type="module">
     import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/+esm";
 
-    let client;
-    const statusEl = document.getElementById('connectionStatus');
+    // --- CONFIGURAÇÃO DOS SPACES ---
+    const CLUSTERS = {
+        "Cluster1": "Madras1/APIDOST",   // O Space Principal (Router V4)
+        "Cluster2": "Madras1/APISMALL"   // O Novo Space Matemático
+    };
+
+    let clients = {}; // Armazena os clientes conectados
+    const statusMain = document.getElementById('status-main');
+    const statusMath = document.getElementById('status-math');
     const sendBtn = document.getElementById('sendBtn');
     const historyDiv = document.getElementById('chat-history');
-    
-    // Nome do seu Space no Hugging Face (Verifique se está certo!)
-    const SPACE_ID = "Madras1/APIDOST"; 
 
-    // 1. Inicialização e Conexão
+    // 1. Inicialização e Conexão Múltipla
     async function initSystem() {
-        statusEl.innerText = "🛰️ BUSCANDO SINAL...";
-        appendMessage("bot", "<strong>SYSTEM:</strong> Tentando handshake com " + SPACE_ID + "...");
+        appendMessage("bot", "<strong>SYSTEM:</strong> Tentando conectar aos Clusters...");
         
+        // Conecta Cluster 1 (Main)
         try {
-            client = await Client.connect(SPACE_ID);
-            statusEl.innerText = "🟢 ONLINE - CONECTADO";
-            statusEl.style.color = "#00ff41";
-            appendMessage("bot", "<strong>SYSTEM:</strong> Conexão estabelecida. Todos os modelos disponíveis (Google, Groq, Mistral).");
-        } catch (error) {
-            statusEl.innerText = "❌ ERRO DE CONEXÃO";
-            appendMessage("bot", "<strong>ERRO:</strong> Não foi possível conectar ao Space. Verifique se ele está 'Running' no Hugging Face. Detalhes: " + error.message);
-            console.error(error);
+            clients["Cluster1"] = await Client.connect(CLUSTERS["Cluster1"]);
+            statusMain.innerText = "ONLINE";
+            statusMain.style.color = "#00ff41";
+            console.log("Cluster 1 conectado");
+        } catch (e) {
+            statusMain.innerText = "ERRO";
+            console.error("Erro Cluster 1:", e);
         }
+
+        // Conecta Cluster 2 (Math)
+        try {
+            clients["Cluster2"] = await Client.connect(CLUSTERS["Cluster2"]);
+            statusMath.innerText = "ONLINE";
+            statusMath.style.color = "#00ff41";
+            console.log("Cluster 2 conectado");
+        } catch (e) {
+            statusMath.innerText = "ERRO";
+            console.error("Erro Cluster 2:", e);
+        }
+
+        appendMessage("bot", "<strong>SYSTEM:</strong> Inicialização concluída.");
     }
 
-    // Chama ao carregar a página
+    // Chama ao carregar
     initSystem();
 
     // 2. Enviar Mensagem
@@ -262,12 +285,16 @@
         const input = document.getElementById('userInput');
         const modelSelect = document.getElementById('modelSelector');
         const userText = input.value;
-
+        
         if (!userText.trim()) return;
-        if (!client) {
-            alert("Sistema offline. Tentando reconectar...");
-            await initSystem();
-            if(!client) return;
+
+        // O valor do option vem como "ClusterX|NomeDoModelo"
+        const [targetCluster, modelName] = modelSelect.value.split('|');
+        const activeClient = clients[targetCluster];
+
+        if (!activeClient) {
+            alert(`O ${targetCluster} está offline ou desconectado. Tente recarregar.`);
+            return;
         }
 
         // UI Updates
@@ -276,11 +303,10 @@
         setLoading(true);
 
         try {
-            // Chama a API do Gradio
-            // O endpoint "/chat" é criado automaticamente pelo gr.ChatInterface
-            const result = await client.predict("/chat", { 
+            // Chama a API do Cluster correto
+            const result = await activeClient.predict("/chat", { 
                 message: userText, 
-                model_selector: modelSelect.value 
+                model_selector: modelName // Envia só o nome limpo pro Python
             });
 
             const botResponse = result.data[0];
@@ -291,9 +317,9 @@
             let msg = "Erro desconhecido.";
             
             if(error.message.includes("GPU quota")) {
-                msg = "⚠️ COTA H200 EXCEDIDA. Mude para Gemini, Groq ou Mistral.";
+                msg = `⚠️ COTA DE GPU EXCEDIDA no ${targetCluster}. Tente outro modelo.`;
             } else if (error.message.includes("aborted")) {
-                msg = "⚠️ TAREFA ABORTADA. A GPU H200 está indisponível. Use um modelo de nuvem.";
+                msg = "⚠️ TAREFA ABORTADA. GPU indisponível no momento.";
             } else {
                 msg = "Erro no processamento: " + error.message;
             }
@@ -307,7 +333,7 @@
     function appendMessage(role, text) {
         const div = document.createElement('div');
         div.className = "message " + role;
-        div.innerHTML = text; // Permite HTML (negrito, etc)
+        div.innerHTML = text; 
         historyDiv.appendChild(div);
         historyDiv.scrollTop = historyDiv.scrollHeight;
     }
@@ -315,14 +341,10 @@
     function setLoading(isLoading) {
         if (isLoading) {
             sendBtn.disabled = true;
-            sendBtn.innerText = "PROCESSANDO...";
-            statusEl.innerText = "🤔 PENSANDO...";
-            statusEl.style.color = "yellow";
+            sendBtn.innerText = "...";
         } else {
             sendBtn.disabled = false;
             sendBtn.innerText = "ENVIAR";
-            statusEl.innerText = "🟢 ONLINE";
-            statusEl.style.color = "#00ff41";
             document.getElementById('userInput').focus();
         }
     }
