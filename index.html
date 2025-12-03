@@ -3,233 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbitOS V5 - Multi-Cluster</title>
+    <title>PIP-BOY 3000 // CHAT INTERFACE</title>
+    <!-- Fallout-style font -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        /* --- ESTILO ORBITOS: DARK/CYBERPUNK --- */
         :root {
-            --primary: #00ff41; /* Verde Matrix */
-            --secondary: #0088ff; /* Azul Cyber */
-            --bg: #050505;
-            --panel: #111;
-            --border: #333;
-            --text: #eee;
-            --user-bg: #004400;
-            --bot-bg: #222;
+            /* Fallout 4 Amber/Green Color Scheme - focusing on Green */
+            --pip-green: #1eff00; 
+            --pip-green-dim: #00b300;
+            --pip-green-dark: #002b00;
+            --pip-bg: #0d120d; /* Dark CRT screen */
+            --scanline: rgba(0, 0, 0, 0.5);
+            --crt-flicker: rgba(30, 255, 0, 0.05);
+            --border-color: #1eff00;
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--pip-green) var(--pip-bg);
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #000;
+            color: var(--pip-green);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             overflow: hidden;
+            text-transform: uppercase;
         }
 
-        .terminal-container {
-            width: 95%;
-            max-width: 900px;
-            height: 90vh;
-            background: var(--panel);
-            border: 1px solid var(--primary);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* Efeito Scanline */
-        .terminal-container::before {
+        /* CRT Overlay Effect */
+        body::after {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
+            z-index: 100;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
         }
 
-        h1 {
+        .pipboy-frame {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            background: var(--pip-bg);
+            position: relative;
+            box-shadow: 0 0 20px rgba(30, 255, 0, 0.2);
+        }
+
+        /* Sidebar - Model Selection & Status */
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 20, 0, 0.8);
+            border-right: 2px solid var(--pip-green);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .brand {
+            font-size: 2rem;
+            text-shadow: 0 0 10px var(--pip-green);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--pip-green);
+            padding-bottom: 10px;
             text-align: center;
-            margin: 0 0 15px 0;
-            color: var(--primary);
-            text-shadow: 0 0 10px var(--primary);
-            font-size: 1.5rem;
-            letter-spacing: 2px;
         }
 
-        .status-bar {
+        .status-panel {
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+            border: 1px dashed var(--pip-green-dim);
+            padding: 10px;
+        }
+
+        .status-item {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 0.8rem;
-            color: #888;
+            margin-bottom: 5px;
         }
 
-        .status-indicator {
-            font-weight: bold;
-            margin-left: 10px;
+        .status-on { color: var(--pip-green); text-shadow: 0 0 5px var(--pip-green); }
+        .status-off { color: red; text-shadow: 0 0 5px red; }
+
+        .model-list {
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
-        /* --- CONTROLES --- */
-        .controls {
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-            z-index: 3;
+        .model-group-title {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--pip-green-dim);
+            color: var(--pip-green-dim);
+            margin-bottom: 5px;
         }
 
-        select, input, button {
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--primary);
-            padding: 12px;
-            border-radius: 4px;
-            font-family: inherit;
+        /* Custom Radio Buttons for Models */
+        .model-option {
+            display: block;
+            cursor: pointer;
+            padding: 8px;
+            margin: 5px 0;
+            transition: all 0.2s;
+            border: 1px solid transparent;
             font-size: 0.9rem;
         }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 5px var(--primary);
+        .model-option:hover {
+            background: var(--pip-green-dark);
+            border: 1px solid var(--pip-green-dim);
         }
 
-        /* --- CHAT AREA --- */
-        #chat-history {
+        .model-option input {
+            display: none;
+        }
+
+        .model-option.selected {
+            background: var(--pip-green);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--pip-green);
+        }
+
+        /* Main Chat Area */
+        .main-chat {
             flex-grow: 1;
-            overflow-y: auto;
-            background: #0a0a0a;
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            z-index: 3;
+            position: relative;
+            z-index: 10;
+        }
+
+        .chat-history {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .message {
-            max-width: 85%;
-            padding: 10px 15px;
-            border-radius: 6px;
-            line-height: 1.5;
+            max-width: 80%;
+            padding: 15px;
+            border: 1px solid var(--pip-green);
             position: relative;
+            line-height: 1.4;
             word-wrap: break-word;
+            /* Boxy aesthetic */
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 10px), 
+                calc(100% - 10px) 100%, 
+                0 100%
+            );
         }
 
-        .user {
-            align-self: flex-end;
-            background: var(--user-bg);
-            color: #fff;
-            border-right: 3px solid var(--primary);
-        }
-
-        .bot {
+        .message.bot {
             align-self: flex-start;
-            background: var(--bot-bg);
-            color: #ddd;
-            border-left: 3px solid var(--secondary);
+            background: rgba(0, 43, 0, 0.3);
         }
 
-        .bot strong { color: var(--secondary); }
-        .user strong { color: var(--primary); }
+        .message.user {
+            align-self: flex-end;
+            background: var(--pip-green);
+            color: #000;
+            /* Invert clip path for variety if desired, but keeping consistent is fine */
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% 100%, 
+                10px 100%, 
+                0 calc(100% - 10px)
+            );
+        }
+
+        .message strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
 
         /* Input Area */
-        .input-area {
+        .input-container {
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            border-top: 2px solid var(--pip-green);
             display: flex;
             gap: 10px;
-            z-index: 3;
+            align-items: center;
+        }
+
+        .prompt-char {
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        input[type="text"] {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--pip-green);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            padding: 10px;
+            text-transform: none; /* Let user type normally */
+        }
+
+        input[type="text"]:focus {
+            outline: none;
         }
 
         button#sendBtn {
-            background: var(--primary);
-            color: #000;
-            font-weight: bold;
+            background: transparent;
+            color: var(--pip-green);
+            border: 2px solid var(--pip-green);
+            padding: 10px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
             cursor: pointer;
-            border: none;
             transition: 0.2s;
+            text-transform: uppercase;
         }
 
         button#sendBtn:hover {
-            background: #00cc33;
-            box-shadow: 0 0 10px var(--primary);
+            background: var(--pip-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--pip-green);
         }
 
-        button:disabled {
-            background: #333;
+        button#sendBtn:disabled {
+            border-color: #555;
             color: #555;
             cursor: not-allowed;
+            background: transparent;
             box-shadow: none;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--pip-green-dim);
+            color: var(--pip-green-dim);
+            padding: 5px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+        .action-btn:hover {
+            background: var(--pip-green-dim);
+            color: #000;
+        }
 
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #001100; }
+        ::-webkit-scrollbar-thumb { background: var(--pip-green-dim); border: 1px solid #000; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--pip-green); }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .pipboy-frame {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 200px; /* Collapsed height */
+                border-right: none;
+                border-bottom: 2px solid var(--pip-green);
+            }
+            .brand {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+            .main-chat {
+                height: calc(100vh - 200px);
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="terminal-container">
-    <h1>🪐 OrbitOS V5 // MULTI-CLUSTER</h1>
-    
-    <div class="status-bar">
-        <span>USER: GABRIEL</span>
-        <div>
-            <span>CLUSTER 1 (MAIN):</span> <span id="status-main" class="status-indicator" style="color:red">OFF</span> |
-            <span>CLUSTER 2 (MATH):</span> <span id="status-math" class="status-indicator" style="color:red">OFF</span>
+<div class="pipboy-frame">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">PIP-BOY 3000</div>
+        
+        <div class="status-panel">
+            <div class="status-item">
+                <span>CLUSTER 1:</span>
+                <span id="status-main" class="status-off">OFFLINE</span>
+            </div>
+            <div class="status-item">
+                <span>CLUSTER 2:</span>
+                <span id="status-math" class="status-off">OFFLINE</span>
+            </div>
         </div>
-    </div>
 
-    <div class="controls">
-        <select id="modelSelector">
-            <optgroup label="GOOGLE (Cluster 1)">
-                <option value="Cluster1|✨ Google: Gemini 1.5 Flash (Rápido)">⚡ Gemini Flash (Rápido)</option>
-                <option value="Cluster1|✨ Google: Gemini 1.5 Pro (Raciocínio Avançado)">🧠 Gemini Pro (Inteligente)</option>
-            </optgroup>
-            
-            <optgroup label="GROQ / MISTRAL (Cluster 1)">
-                <option value="Cluster1|☁️ Groq: Llama 3.3 70B (Versátil)">☁️ Llama 3.3 70B</option>
-                <option value="Cluster1|☁️ Groq: Llama 3.1 8B (Instantâneo)">⚡ Llama 3.1 8B Flash</option>
-                <option value="Cluster1|🇫🇷 Mistral: Large 3 (SOTA Europeu)">🏰 Mistral Large 3</option>
-                <option value="Cluster1|🇫🇷 Mistral: Codestral (Código)">👨‍💻 Mistral Codestral</option>
-            </optgroup>
+        <div style="margin-bottom: 10px; font-weight: bold;">[ SELECIONAR MODELO ]</div>
+        <div class="model-list" id="model-list-container">
+            <!-- Models will be injected here via JS or static -->
+            <!-- Google -->
+            <div class="model-group-title">GOOGLE (CLUSTER 1)</div>
+            <label class="model-option selected" onclick="selectModel(this, 'Cluster1|✨ Google: Gemini 1.5 Flash (Rápido)')">
+                <input type="radio" name="model" checked> GEMINI FLASH 1.5
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|✨ Google: Gemini 1.5 Pro (Raciocínio Avançado)')">
+                <input type="radio" name="model"> GEMINI PRO 1.5
+            </label>
 
-            <optgroup label="MÓDULO MATEMÁTICO (Cluster 2 - H200)">
-                <option value="Cluster2|🐳 DeepSeek Math 7B (Especialista em Exatas)">🐳 DeepSeek Math (Exatas)</option>
-                <option value="Cluster2|🦙 Llama 3 8B (Raciocínio Geral)">🦙 Llama 3 8B (Lógica)</option>
-                <option value="Cluster2|💎 Gemma 2 9B (Google - Raciocínio Lógico)">💎 Gemma 2 9B (Google)</option>
-            </optgroup>
+            <!-- Groq / Mistral -->
+            <div class="model-group-title">GROQ / MISTRAL</div>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|☁️ Groq: Llama 3.3 70B (Versátil)')">
+                <input type="radio" name="model"> LLAMA 3.3 70B
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|☁️ Groq: Llama 3.1 8B (Instantâneo)')">
+                <input type="radio" name="model"> LLAMA 3.1 8B FLASH
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|🇫🇷 Mistral: Large 3 (SOTA Europeu)')">
+                <input type="radio" name="model"> MISTRAL LARGE 3
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|🇫🇷 Mistral: Codestral (Código)')">
+                <input type="radio" name="model"> MISTRAL CODESTRAL
+            </label>
 
-            <optgroup label="LOCAL H200 (Cluster 1)">
-                <option value="Cluster1|🔥 Local H200: Qwen 2.5 Coder 32B (Cota ZeroGPU)">🔥 Qwen Coder (OFF se sem cota)</option>
-            </optgroup>
-        </select>
-        <button onclick="clearChat()">Limpar</button>
-    </div>
+            <!-- Math -->
+            <div class="model-group-title">MÓDULO MATEMÁTICO</div>
+            <label class="model-option" onclick="selectModel(this, 'Cluster2|🐳 DeepSeek Math 7B (Especialista em Exatas)')">
+                <input type="radio" name="model"> DEEPSEEK MATH 7B
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster2|🦙 Llama 3 8B (Raciocínio Geral)')">
+                <input type="radio" name="model"> LLAMA 3 8B MATH
+            </label>
+            <label class="model-option" onclick="selectModel(this, 'Cluster2|💎 Gemma 2 9B (Google - Raciocínio Lógico)')">
+                <input type="radio" name="model"> GEMMA 2 9B
+            </label>
 
-    <div id="chat-history">
-        <div class="message bot">
-            <strong>SYSTEM:</strong> Iniciando protocolos de conexão multi-space...
+            <!-- Local -->
+            <div class="model-group-title">LOCAL H200</div>
+            <label class="model-option" onclick="selectModel(this, 'Cluster1|🔥 Local H200: Qwen 2.5 Coder 32B (Cota ZeroGPU)')">
+                <input type="radio" name="model"> QWEN 2.5 CODER 32B
+            </label>
         </div>
+
+        <button class="action-btn" onclick="clearChat()">[ LIMPAR MEMÓRIA ]</button>
     </div>
 
-    <div class="input-area">
-        <input type="text" id="userInput" placeholder="Insira comando ou mensagem..." onkeypress="handleEnter(event)" autofocus />
-        <button id="sendBtn" onclick="sendMessage()">ENVIAR</button>
+    <!-- Main Chat -->
+    <div class="main-chat">
+        <div class="chat-history" id="chat-history">
+            <div class="message bot">
+                <strong>SYSTEM</strong>
+                INICIALIZANDO PROTOCOLOS DE COMUNICAÇÃO...<br>
+                PIP-BOY 3000 ONLINE. AGUARDANDO CONEXÃO COM CLUSTERS.
+            </div>
+        </div>
+
+        <div class="input-container">
+            <span class="prompt-char">></span>
+            <input type="text" id="userInput" placeholder="INSIRA COMANDO..." onkeypress="handleEnter(event)" autofocus />
+            <button id="sendBtn" onclick="sendMessage()">EXECUTAR</button>
+        </div>
     </div>
 </div>
 
@@ -238,98 +388,103 @@
 
     // --- CONFIGURAÇÃO DOS SPACES ---
     const CLUSTERS = {
-        "Cluster1": "Madras1/APIDOST",   // O Space Principal (Router V4)
-        "Cluster2": "Madras1/APISMALL"   // O Novo Space Matemático
+        "Cluster1": "Madras1/APIDOST",
+        "Cluster2": "Madras1/APISMALL"
     };
 
-    let clients = {}; // Armazena os clientes conectados
+    let clients = {}; 
+    let currentModelValue = "Cluster1|✨ Google: Gemini 1.5 Flash (Rápido)"; // Default
+
     const statusMain = document.getElementById('status-main');
     const statusMath = document.getElementById('status-math');
     const sendBtn = document.getElementById('sendBtn');
     const historyDiv = document.getElementById('chat-history');
 
-    // 1. Inicialização e Conexão Múltipla
-    async function initSystem() {
-        appendMessage("bot", "<strong>SYSTEM:</strong> Tentando conectar aos Clusters...");
+    // Make selectModel global
+    window.selectModel = function(element, value) {
+        // Visual selection
+        document.querySelectorAll('.model-option').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
         
-        // Conecta Cluster 1 (Main)
+        currentModelValue = value;
+        console.log("Modelo selecionado:", value);
+    }
+
+    // 1. Inicialização
+    async function initSystem() {
+        appendMessage("bot", "<strong>SYSTEM</strong> TENTANDO CONEXÃO COM CLUSTERS...");
+        
+        // Conecta Cluster 1
         try {
             clients["Cluster1"] = await Client.connect(CLUSTERS["Cluster1"]);
             statusMain.innerText = "ONLINE";
-            statusMain.style.color = "#00ff41";
-            console.log("Cluster 1 conectado");
+            statusMain.className = "status-on";
         } catch (e) {
             statusMain.innerText = "ERRO";
             console.error("Erro Cluster 1:", e);
         }
 
-        // Conecta Cluster 2 (Math)
+        // Conecta Cluster 2
         try {
             clients["Cluster2"] = await Client.connect(CLUSTERS["Cluster2"]);
             statusMath.innerText = "ONLINE";
-            statusMath.style.color = "#00ff41";
-            console.log("Cluster 2 conectado");
+            statusMath.className = "status-on";
         } catch (e) {
             statusMath.innerText = "ERRO";
             console.error("Erro Cluster 2:", e);
         }
 
-        appendMessage("bot", "<strong>SYSTEM:</strong> Inicialização concluída.");
+        appendMessage("bot", "<strong>SYSTEM</strong> SISTEMA PRONTO.");
     }
 
-    // Chama ao carregar
     initSystem();
 
     // 2. Enviar Mensagem
     window.sendMessage = async function() {
         const input = document.getElementById('userInput');
-        const modelSelect = document.getElementById('modelSelector');
         const userText = input.value;
         
         if (!userText.trim()) return;
 
-        // O valor do option vem como "ClusterX|NomeDoModelo"
-        const [targetCluster, modelName] = modelSelect.value.split('|');
+        const [targetCluster, modelName] = currentModelValue.split('|');
         const activeClient = clients[targetCluster];
 
         if (!activeClient) {
-            alert(`O ${targetCluster} está offline ou desconectado. Tente recarregar.`);
+            alert(`O ${targetCluster} ESTÁ OFFLINE. VERIFIQUE CONEXÃO.`);
             return;
         }
 
-        // UI Updates
         input.value = "";
-        appendMessage("user", userText);
+        appendMessage("user", `<strong>USER</strong> ${userText}`);
         setLoading(true);
 
         try {
-            // Chama a API do Cluster correto
             const result = await activeClient.predict("/chat", { 
                 message: userText, 
-                model_selector: modelName // Envia só o nome limpo pro Python
+                model_selector: modelName 
             });
 
             const botResponse = result.data[0];
-            appendMessage("bot", botResponse);
+            appendMessage("bot", `<strong>SYSTEM</strong> ${botResponse}`);
 
         } catch (error) {
             console.error(error);
-            let msg = "Erro desconhecido.";
+            let msg = "ERRO DESCONHECIDO.";
             
             if(error.message.includes("GPU quota")) {
-                msg = `⚠️ COTA DE GPU EXCEDIDA no ${targetCluster}. Tente outro modelo.`;
+                msg = `⚠️ COTA DE GPU EXCEDIDA (${targetCluster}).`;
             } else if (error.message.includes("aborted")) {
-                msg = "⚠️ TAREFA ABORTADA. GPU indisponível no momento.";
+                msg = "⚠️ TAREFA ABORTADA. RECURSOS INDISPONÍVEIS.";
             } else {
-                msg = "Erro no processamento: " + error.message;
+                msg = "ERRO NO PROCESSAMENTO: " + error.message;
             }
-            appendMessage("bot", "<strong>ERRO:</strong> " + msg);
+            appendMessage("bot", `<strong>ERRO</strong> ${msg}`);
         } finally {
             setLoading(false);
         }
     }
 
-    // 3. Utilitários
     function appendMessage(role, text) {
         const div = document.createElement('div');
         div.className = "message " + role;
@@ -341,16 +496,16 @@
     function setLoading(isLoading) {
         if (isLoading) {
             sendBtn.disabled = true;
-            sendBtn.innerText = "...";
+            sendBtn.innerText = "PROC...";
         } else {
             sendBtn.disabled = false;
-            sendBtn.innerText = "ENVIAR";
+            sendBtn.innerText = "EXECUTAR";
             document.getElementById('userInput').focus();
         }
     }
 
     window.clearChat = function() {
-        historyDiv.innerHTML = '<div class="message bot"><strong>SYSTEM:</strong> Memória limpa.</div>';
+        historyDiv.innerHTML = '<div class="message bot"><strong>SYSTEM</strong> MEMÓRIA LIMPA.</div>';
     }
 
     window.handleEnter = function(e) {
